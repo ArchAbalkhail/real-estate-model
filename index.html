@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تحليل أجرة العقار</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary-color: #1a2e44;
+            --secondary-color: #4a90e2;
+            --accent-color: #27ae60;
+            --light-bg: #f8f9fa;
+            --dark-bg: #343a40;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        body {
+            font-family: 'Cairo', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .navbar {
+            background-color: var(--primary-color);
+            box-shadow: var(--box-shadow);
+        }
+        
+        .navbar-brand {
+            font-weight: bold;
+            color: white !important;
+        }
+        
+        .card {
+            border: none;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            margin-bottom: 20px;
+            transition: transform 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card-header {
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: var(--border-radius) var(--border-radius) 0 0 !important;
+            font-weight: bold;
+        }
+        
+        .btn-primary {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+        
+        .btn-primary:hover {
+            background-color: #3a7bc8;
+            border-color: #3a7bc8;
+        }
+        
+        .btn-success {
+            background-color: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+        
+        .btn-success:hover {
+            background-color: #219653;
+            border-color: #219653;
+        }
+        
+        .form-label {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-control {
+            border-radius: var(--border-radius);
+            border: 1px solid #ced4da;
+            padding: 0.75rem;
+        }
+        
+        .form-control:focus {
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 0.25rem rgba(74, 144, 226, 0.25);
+        }
+        
+        .input-group-text {
+            background-color: var(--light-bg);
+            border-radius: var(--border-radius);
+        }
+        
+        .result-value {
+            font-weight: bold;
+            color: var(--primary-color);
+            font-size: 1.1rem;
+        }
+        
+        .main-result {
+            background-color: #e9f3fe;
+            border: 1px solid var(--secondary-color);
+            border-radius: var(--border-radius);
+            padding: 15px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .main-result-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--secondary-color);
+        }
+        
+        .formula-box {
+            background-color: #f8f9fa;
+            border: 1px dashed #ced4da;
+            border-radius: var(--border-radius);
+            padding: 10px;
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+        
+        .formula-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: var(--primary-color);
+        }
+        
+        .formula-explanation {
+            color: #6c757d;
+        }
+        
+        .table {
+            border-radius: var(--border-radius);
+            overflow: hidden;
+        }
+        
+        .table thead th {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+        }
+        
+        .table-striped tbody tr:nth-of-type(odd) {
+            background-color: rgba(0, 0, 0, 0.02);
+        }
+        
+        .table-hover tbody tr:hover {
+            background-color: rgba(74, 144, 226, 0.1);
+        }
+        
+        .rent-slider-container {
+            background-color: #e9f3fe;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .rent-slider {
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        .npv-value {
+            font-weight: bold;
+            color: var(--secondary-color);
+        }
+        
+        .section-divider {
+            height: 1px;
+            background-color: #e9ecef;
+            margin: 30px 0;
+        }
+        
+        .language-toggle {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 1000;
+        }
+        
+        @media (max-width: 768px) {
+            .card-body {
+                padding: 1rem;
+            }
+            
+            .main-result-value {
+                font-size: 1.2rem;
+            }
+            
+            .table-responsive {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="bi bi-building"></i> تحليل أجرة العقار
+            </a>
+            <div class="language-toggle">
+                <button id="toggleLanguage" class="btn btn-sm btn-light">
+                    <i class="bi bi-translate"></i> English
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container my-4">
+        <div class="row">
+            <div class="col-md-12 mb-4">
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle-fill me-2"></i>
+                    أدخل البيانات المطلوبة في النموذج أدناه ثم اضغط على زر "حساب النتائج" للحصول على تحليل أجرة العقار.
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- نموذج المدخلات -->
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="bi bi-input-cursor-text me-2"></i> المدخلات
+                    </div>
+                    <div class="card-body">
+                        <form id="inputForm">
+                            <!-- معلومات العقد -->
+                            <h5 class="mb-3"><i class="bi bi-file-earmark-text me-2"></i> معلومات العقد</h5>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="contractDuration" class="form-label">مدة العقد (سنوات)</label>
+                                    <input type="number" class="form-control" id="contractDuration" value="25" min="1" step="1">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="gracePeriod" class="form-label">فترة السماح (سنوات)</label>
+                                    <input type="number" class="form-control" id="gracePeriod" value="2.5" min="0" step="0.1">
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="rentIncreaseInterval" class="form-label">زيادة إيجارية متكررة (كل سنوات)</label>
+                                    <input type="number" class="form-control" id="rentIncreaseInterval" value="3" min="1" step="1">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="rentIncreaseRate" class="form-label">نسبة الزيادة الإيجارية (%)</label>
+                                    <input type="number" class="form-control" id="rentIncreaseRate" value="10" min="0" step="1">
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="capitalizationRate" class="form-label">معدل الرسملة (%)</label>
+                                    <input type="number" class="form-control" id="capitalizationRate" value="8" min="0" step="1">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="discountRate" class="form-label">معدل الخصم (%)</label>
+                                    <input type="number" class="form-control" id="discountRate" value="10" min="0" step="1">
+                                </div>
+                            </div>
+
+                            <hr class="my-4">
+
+                            <!-- معلومات الأرض والبناء -->
+                            <h5 class="mb-3"><i class="bi bi-building me-2"></i> معلومات الأرض والبناء</h5>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="landArea" class="form-label">مساحة الأرض (م²)</label>
+                                    <input type="number" class="form-control" id="landArea" value="10000" min="0" step="1">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="buildingCoefficient" class="form-label">معامل البناء</label>
+                                    <input type="number" class="form-control" id="buildingCoefficient" value="2.5" min="0" step="0.1">
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="buildingRatio" class="form-label">نسبة البناء (%)</label>
+                                    <input type="number" class="form-control" id="buildingRatio" value="60" min="0" max="100" step="1">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="basementArea" class="form-label">مسطح القبو (م²)</label>
+                                    <input type="number" class="form-control" id="basementArea" value="6000" min="0" step="1">
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">إجمالي مسطحات البناء (م²)</label>
+                                    <input type="text" class="form-control" id="totalBuildingArea" readonly>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">مساحة أعمال الموقع العام (م²)</label>
+                                    <input type="text" class="form-control" id="siteWorkArea" readonly>
+                                </div>
+                            </div>
+
+                            <hr class="my-4">
+
+                            <!-- معلومات التكاليف -->
+                            <h5 class="mb-3"><i class="bi bi-cash-coin me-2"></i> معلومات التكاليف</h5>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="buildingCost" class="form-label">تكلفة البناء (ريال/متر²)</label>
+                                    <input type="number" class="form-control" id="buildingCost" value="3500" min="0" step="1">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="siteworkCost" class="form-label">تكلفة أعمال الموقع العام (ريال/متر²)</label>
+                                    <input type="number" class="form-control" id="siteworkCost" value="350" min="0" step="1">
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="basementCost" class="form-label">تكلفة القبو (ريال/متر²)</label>
+                                    <input type="number" class="form-control" id="basementCost" value="2500" min="0" step="1">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="designCost" class="form-label">تكاليف التصميم والإشراف الهندسي (%)</label>
+                                    <input type="number" class="form-control" id="designCost" value="3" min="0" step="1">
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="indirectCost" class="form-label">تكاليف غير مباشرة (%)</label>
+                                    <input type="number" class="form-control" id="indirectCost" value="5" min="0" step="1">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="priceRiskCost" class="form-label">مخاطر ارتفاع الأسعار (%)</label>
+                                    <input type="number" class="form-control" id="priceRiskCost" value="5" min="0" step="1">
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">تكلفة البناء الإجمالية</label>
+                                    <input type="text" class="form-control" id="totalBuildingCost" readonly>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">تكلفة أعمال الموقع العام الإجمالية</label>
+                                    <input type="text" class="form-control" id="totalSiteWorkCost" readonly>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">تكلفة القبو الإجمالية</label>
+                                    <input type="text" class="form-control" id="totalBasementCost" readonly>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">إجمالي تكلفة الإنشاءات</label>
+                                    <input type="text" class="form-control" id="constructionCost" readonly>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <label class="form-label">تكاليف التصميم والإشراف الهندسي</label>
+                                    <input type="text" class="form-control" id="totalDesignCost" readonly>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">التكاليف غير المباشرة</label>
+                                    <input type="text" class="form-control" id="totalIndirectCost" readonly>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">تكاليف مخاطر ارتفاع الأسعار</label>
+                                    <input type="text" class="form-control" id="totalPriceRiskCost" readonly>
+                                </div>
+                            </div>
+
+                            <hr class="my-4">
+
+                            <!-- معلومات الدخل -->
+                            <h5 class="mb-3"><i class="bi bi-graph-up-arrow me-2"></i> معلومات الدخل</h5>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="totalIncome" class="form-label">إجمالي الدخل السنوي المتوقع</label>
+                                    <input type="number" class="form-control" id="totalIncome" value="10000000" min="0" step="1">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="netIncomeRatio" class="form-label">صافي الدخل (نسبة %)</label>
+                                    <input type="number" class="form-control" id="netIncomeRatio" value="70" min="0" max="100" step="1">
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="incomeStartYear" class="form-label">عدد السنوات المتوقع لبدء سريان الدخل</label>
+                                    <input type="number" class="form-control" id="incomeStartYear" value="2" min="0" step="1">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="incomeRampUpRate" class="form-label">نسبة تدرج الوصول إلى الدخل (%)</label>
+                                    <input type="number" class="form-control" id="incomeRampUpRate" value="25" min="0" max="100" step="1">
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <label class="form-label">متوسط صافي الدخل السنوي (متوقع كحد أقصى)</label>
+                                    <input type="text" class="form-control" id="averageAnnualNetIncome" readonly>
+                                </div>
+                            </div>
+
+                            <div class="d-grid gap-2 mt-4">
+                                <button type="button" id="calculateBtn" class="btn btn-primary btn-lg">
+                                    <i class="bi bi-calculator me-2"></i> حساب النتائج
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- النتائج -->
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="bi bi-bar-chart-line me-2"></i> النتائج
+                    </div>
+                    <div class="card-body">
+                        <div id="resultsContainer" style="display: none;">
+                            <!-- مزلاج الإيجار السنوي -->
+                            <div class="rent-slider-container mb-4">
+                                <h5 class="mb-3">الإيجار السنوي (قيمة العطاء المقترح)</h5>
+                                <div class="row align-items-center">
+                                    <div class="col-md-8">
+                                        <input type="range" class="form-range rent-slider" id="rentSlider" min="0" max="100" step="1000">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="input-group">
+                                            <input type="number" class="form-control" id="rentValue" min="0">
+                                            <span class="input-group-text">ريال</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-between mt-2">
+                                    <small>صافي القيمة الحالية: <span id="npvForRent" class="npv-value">0</span> ريال</small>
+                                    <button id="applyRentBtn" class="btn btn-sm btn-primary">تطبيق القيمة</button>
+                                </div>
+                            </div>
+
+                            <!-- النتائج الرئيسية -->
+                            <div class="main-result mb-4">
+                                <h5>الإيجار السنوي (قيمة العطاء المقترح)</h5>
+                                <div class="main-result-value" id="proposedBidValue">0 ريال</div>
+                                <div class="formula-box mt-2">
+                                    <div class="formula-title">المعادلة:</div>
+                                    <div>الإيجار السنوي = مخصص شراء الأرض × معدل الرسملة</div>
+                                    <div class="formula-explanation mt-1">
+                                        هذه القيمة تمثل أعلى قيمة إيجار سنوي يمكن دفعها لتحقيق عائد استثماري مناسب.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="main-result mb-4">
+                                <h5>إجمالي قيمة عقد الإيجار</h5>
+                                <div class="main-result-value" id="totalContractValue">0 ريال</div>
+                                <div class="formula-box mt-2">
+                                    <div class="formula-title">المعادلة:</div>
+                                    <div>إجمالي قيمة العقد = مجموع الإيجارات السنوية طوال مدة العقد</div>
+                                    <div class="formula-explanation mt-1">
+                                        هذه القيمة تمثل إجمالي المبالغ التي سيتم دفعها كإيجار خلال فترة العقد كاملة.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <h5 class="mb-3">المؤشرات المالية</h5>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">مخصص شراء الأرض</label>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control result-value" id="landAllocation" readonly>
+                                        <span class="input-group-text">ريال</span>
+                                    </div>
+                                    <div class="formula-box mt-2">
+                                        <div class="formula-title">المعادلة:</div>
+                                        <div>مخصص شراء الأرض = صافي القيمة الحالية - إجمالي تكاليف التطوير</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">نسبة التأجير من مخصص شراء الأرض</label>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control result-value" id="rentToLandAllocationRatio" readonly>
+                                        <span class="input-group-text">%</span>
+                                    </div>
+                                    <div class="formula-box mt-2">
+                                        <div class="formula-title">المعادلة:</div>
+                                        <div>النسبة = (الإيجار السنوي ÷ مخصص شراء الأرض) × 100</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">صافي القيمة الحالية للتدفقات النقدية (NPV)</label>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control result-value" id="npv" readonly>
+                                        <span class="input-group-text">ريال</span>
+                                    </div>
+                                    <div class="formula-box mt-2">
+                                        <div class="formula-title">المعادلة:</div>
+                                        <div>NPV = مجموع (صافي الدخل السنوي ÷ (1 + معدل الرسملة)^السنة)</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">معدل العائد الداخلي (IRR)</label>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control result-value" id="irr" readonly>
+                                        <span class="input-group-text">%</span>
+                                    </div>
+                                    <div class="formula-box mt-2">
+                                        <div class="formula-title">المعادلة:</div>
+                                        <div>IRR = متوسط صافي الدخل السنوي ÷ (تكاليف التطوير + مخصص شراء الأرض)</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <label class="form-label">إجمالي تكاليف التطوير</label>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control result-value" id="totalConstructionCost" readonly>
+                                        <span class="input-group-text">ريال</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">إجمالي الدخل طوال فترة العقد</label>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control result-value" id="totalIncomeOverContract" readonly>
+                                        <span class="input-group-text">ريال</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">إجمالي صافي الدخل طوال فترة العقد</label>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control result-value" id="totalNetIncomeOverContract" readonly>
+                                        <span class="input-group-text">ريال</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr class="my-4">
+
+                            <!-- جدول الإيجارات السنوية -->
+                            <h5 class="mb-3">جدول الإيجارات والتدفقات النقدية السنوية</h5>
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover" id="annualRentsTable">
+                                    <thead>
+                                        <tr>
+                                            <th>السنة</th>
+                                            <th>الإيجار السنوي (ريال)</th>
+                                            <th>إجمالي الدخل (ريال)</th>
+                                            <th>صافي الدخل (ريال)</th>
+                                            <th>نسبة الزيادة</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- سيتم ملء هذا الجدول ديناميكيًا -->
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <th>الإجمالي</th>
+                                            <th id="totalRent">0</th>
+                                            <th id="totalIncome">0</th>
+                                            <th id="totalNetIncome">0</th>
+                                            <th>-</th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+
+                            <div class="d-grid gap-2 mt-4">
+                                <button type="button" id="exportPdfBtn" class="btn btn-success">
+                                    <i class="bi bi-file-earmark-pdf me-2"></i> تصدير النتائج كملف PDF
+                                </button>
+                                <button type="button" id="resetBtn" class="btn btn-outline-secondary">
+                                    <i class="bi bi-arrow-counterclockwise me-2"></i> إعادة تعيين
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal للإشعارات -->
+    <div class="modal fade" id="notificationModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="notificationTitle">إشعار</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="notificationMessage">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">موافق</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-dark text-white text-center py-3 mt-5">
+        <div class="container">
+            <p class="mb-0">© 2025 تحليل أجرة العقار - جميع الحقوق محفوظة</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="locales/ar.js"></script>
+    <script src="locales/en.js"></script>
+    <script src="language_manager.js"></script>
+    <script src="financial_model_enhanced_v3.js"></script>
+    <script>
+        // تحويل الأرقام إلى الصيغة العربية
+        function toArabicNumerals(number) {
+            if (number === undefined || number === null) return '';
+            
+            const arabicNumerals = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+            return number.toString().replace(/[0-9]/g, function(w) {
+                return arabicNumerals[+w];
+            });
+        }
+        
+        // تنسيق الأرقام مع فواصل الآلاف
+        function formatNumber(number, decimals = 0) {
+            if (number === undefined || number === null) return '';
+            
+            const formatted = Number(number).toLocaleString('ar-SA', {
+                minimumFractionDigits: decimals,
+                maximumFractionDigits: decimals
+            });
+            
+            return toArabicNumerals(formatted);
+        }
+        
+        // تنسيق النسب المئوية
+        function formatPercent(number, decimals = 2) {
+            if (number === undefined || number === null) return '';
+            
+            const formatted = Number(number).toLocaleString('ar-SA', {
+                minimumFractionDigits: decimals,
+                maximumFractionDigits: decimals
+            });
+            
+            return toArabicNumerals(formatted);
+        }
+        
+        // دالة لعرض الإشعارات
+        function showNotification(title, message) {
+            document.getElementById('notificationTitle').textContent = title;
+            document.getElementById('notificationMessage').textContent = message;
+            const modal = new bootstrap.Modal(document.getElementById('notificationModal'));
+            modal.show();
+        }
+        
+        // دالة لتحديث النتائج
+        function updateResults(results) {
+            // تحديث المساحات
+            document.getElementById('totalBuildingArea').value = formatNumber(results.totalBuildingArea);
+            document.getElementById('siteWorkArea').value = formatNumber(results.siteWorkArea);
+            
+            // تحديث التكاليف
+            document.getElementById('totalBuildingCost').value = formatNumber(results.totalBuildingCost);
+            document.getElementById('totalSiteWorkCost').value = formatNumber(results.totalSiteWorkCost);
+            document.getElementById('totalBasementCost').value = formatNumber(results.totalBasementCost);
+            document.getElementById('constructionCost').value = formatNumber(results.constructionCost);
+            document.getElementById('totalDesignCost').value = formatNumber(results.totalDesignCost);
+            document.getElementById('totalIndirectCost').value = formatNumber(results.totalIndirectCost);
+            document.getElementById('totalPriceRiskCost').value = formatNumber(results.totalPriceRiskCost);
+            
+            // تحديث الدخل
+            document.getElementById('averageAnnualNetIncome').value = formatNumber(results.averageAnnualNetIncome);
+            
+            // تحديث النتائج الرئيسية
+            document.getElementById('proposedBidValue').textContent = formatNumber(results.proposedBidValue) + ' ريال';
+            document.getElementById('totalContractValue').textContent = formatNumber(results.totalContractValue) + ' ريال';
+            document.getElementById('landAllocation').value = formatNumber(results.landAllocation);
+            document.getElementById('rentToLandAllocationRatio').value = formatPercent(results.rentToLandAllocationRatio * 100);
+            document.getElementById('npv').value = formatNumber(results.npv);
+            document.getElementById('irr').value = formatPercent(results.irr * 100);
+            document.getElementById('totalConstructionCost').value = formatNumber(results.totalConstructionCost);
+            document.getElementById('totalIncomeOverContract').value = formatNumber(results.totalIncomeOverContract);
+            document.getElementById('totalNetIncomeOverContract').value = formatNumber(results.totalNetIncomeOverContract);
+            
+            // تحديث مزلاج الإيجار السنوي
+            const rentSlider = document.getElementById('rentSlider');
+            const rentValue = document.getElementById('rentValue');
+            rentSlider.min = 0;
+            rentSlider.max = results.maxRentValue;
+            rentSlider.value = results.proposedBidValue;
+            rentValue.value = results.proposedBidValue;
+            
+            // تحديث جدول الإيجارات السنوية
+            const tableBody = document.getElementById('annualRentsTable').getElementsByTagName('tbody')[0];
+            tableBody.innerHTML = '';
+            
+            let totalRent = 0;
+            let totalIncome = 0;
+            let totalNetIncome = 0;
+            
+            for (let i = 0; i < results.annualRents.length; i++) {
+                const rent = results.annualRents[i];
+                const income = results.annualIncomes[i];
+                const netIncome = results.annualNetIncomes[i];
+                
+                totalRent += rent;
+                totalIncome += income;
+                totalNetIncome += netIncome;
+                
+                const row = tableBody.insertRow();
+                
+                // السنة
+                const yearCell = row.insertCell(0);
+                yearCell.textContent = toArabicNumerals(i + 1);
+                
+                // الإيجار السنوي
+                const rentCell = row.insertCell(1);
+                rentCell.textContent = formatNumber(rent);
+                
+                // إجمالي الدخل
+                const incomeCell = row.insertCell(2);
+                incomeCell.textContent = formatNumber(income);
+                
+                // صافي الدخل
+                const netIncomeCell = row.insertCell(3);
+                netIncomeCell.textContent = formatNumber(netIncome);
+                
+                // نسبة الزيادة
+                const increaseCell = row.insertCell(4);
+                if (i > 0 && results.annualRents[i] > results.annualRents[i-1] && results.annualRents[i-1] > 0) {
+                    const increaseRate = ((results.annualRents[i] / results.annualRents[i-1]) - 1) * 100;
+                    increaseCell.textContent = formatPercent(increaseRate) + '%';
+                } else {
+                    increaseCell.textContent = '-';
+                }
+            }
+            
+            // تحديث إجماليات الجدول
+            document.getElementById('totalRent').textContent = formatNumber(totalRent);
+            document.getElementById('totalIncome').textContent = formatNumber(totalIncome);
+            document.getElementById('totalNetIncome').textContent = formatNumber(totalNetIncome);
+            
+            // إظهار النتائج
+            document.getElementById('resultsContainer').style.display = 'block';
+        }
+        
+        // دالة لقراءة المدخلات من النموذج
+        function readInputs() {
+            return {
+                contractDuration: parseFloat(document.getElementById('contractDuration').value),
+                gracePeriod: parseFloat(document.getElementById('gracePeriod').value),
+                rentIncreaseInterval: parseFloat(document.getElementById('rentIncreaseInterval').value),
+                rentIncreaseRate: parseFloat(document.getElementById('rentIncreaseRate').value),
+                capitalizationRate: parseFloat(document.getElementById('capitalizationRate').value),
+                discountRate: parseFloat(document.getElementById('discountRate').value),
+                
+                landArea: parseFloat(document.getElementById('landArea').value),
+                buildingCoefficient: parseFloat(document.getElementById('buildingCoefficient').value),
+                buildingRatio: parseFloat(document.getElementById('buildingRatio').value),
+                basementArea: parseFloat(document.getElementById('basementArea').value),
+                
+                buildingCost: parseFloat(document.getElementById('buildingCost').value),
+                siteworkCost: parseFloat(document.getElementById('siteworkCost').value),
+                basementCost: parseFloat(document.getElementById('basementCost').value),
+                designCost: parseFloat(document.getElementById('designCost').value),
+                indirectCost: parseFloat(document.getElementById('indirectCost').value),
+                priceRiskCost: parseFloat(document.getElementById('priceRiskCost').value),
+                
+                totalIncome: parseFloat(document.getElementById('totalIncome').value),
+                netIncomeRatio: parseFloat(document.getElementById('netIncomeRatio').value),
+                incomeStartYear: parseFloat(document.getElementById('incomeStartYear').value),
+                incomeRampUpRate: parseFloat(document.getElementById('incomeRampUpRate').value)
+            };
+        }
+        
+        // متغير عام لتخزين نتائج الحساب
+        let currentResults = null;
+        
+        // عند تحميل الصفحة
+        document.addEventListener('DOMContentLoaded', function() {
+            // زر حساب النتائج
+            document.getElementById('calculateBtn').addEventListener('click', function() {
+                try {
+                    const inputs = readInputs();
+                    currentResults = calculateEnhancedResults(inputs);
+                    updateResults(currentResults);
+                } catch (error) {
+                    console.error(error);
+                    showNotification('خطأ', 'حدث خطأ أثناء الحساب. يرجى التحقق من المدخلات والمحاولة مرة أخرى.');
+                }
+            });
+            
+            // مزلاج الإيجار السنوي
+            const rentSlider = document.getElementById('rentSlider');
+            const rentValue = document.getElementById('rentValue');
+            const npvForRent = document.getElementById('npvForRent');
+            
+            rentSlider.addEventListener('input', function() {
+                rentValue.value = this.value;
+                if (currentResults) {
+                    const npv = currentResults.calculateNPVForRent(parseFloat(this.value));
+                    npvForRent.textContent = formatNumber(npv);
+                }
+            });
+            
+            rentValue.addEventListener('input', function() {
+                rentSlider.value = this.value;
+                if (currentResults) {
+                    const npv = currentResults.calculateNPVForRent(parseFloat(this.value));
+                    npvForRent.textContent = formatNumber(npv);
+                }
+            });
+            
+            // زر تطبيق قيمة الإيجار
+            document.getElementById('applyRentBtn').addEventListener('click', function() {
+                if (currentResults) {
+                    const customRent = parseFloat(rentValue.value);
+                    const inputs = readInputs();
+                    
+                    // حساب الإيجارات السنوية المخصصة
+                    const customAnnualRents = calculateCustomAnnualRents(
+                        customRent,
+                        inputs.contractDuration,
+                        inputs.gracePeriod,
+                        inputs.rentIncreaseInterval,
+                        inputs.rentIncreaseRate / 100
+                    );
+                    
+                    // تحديث النتائج مع القيمة المخصصة
+                    currentResults.proposedBidValue = customRent;
+                    currentResults.annualRents = customAnnualRents;
+                    currentResults.totalContractValue = customAnnualRents.reduce((sum, rent) => sum + rent, 0);
+                    currentResults.rentToLandAllocationRatio = currentResults.landAllocation > 0 ? customRent / currentResults.landAllocation : 0;
+                    currentResults.npv = currentResults.calculateNPVForRent(customRent);
+                    
+                    // تحديث العرض
+                    updateResults(currentResults);
+                }
+            });
+            
+            // زر إعادة التعيين
+            document.getElementById('resetBtn').addEventListener('click', function() {
+                document.getElementById('inputForm').reset();
+                document.getElementById('resultsContainer').style.display = 'none';
+                currentResults = null;
+            });
+            
+            // زر تصدير PDF
+            document.getElementById('exportPdfBtn').addEventListener('click', function() {
+                if (!currentResults) {
+                    showNotification('تنبيه', 'يرجى حساب النتائج أولاً قبل تصدير التقرير.');
+                    return;
+                }
+                
+                try {
+                    // جمع البيانات للتصدير
+                    const inputs = readInputs();
+                    const exportData = {
+                        // معلومات العقد
+                        contractDuration: inputs.contractDuration,
+                        gracePeriod: inputs.gracePeriod,
+                        rentIncreaseInterval: inputs.rentIncreaseInterval,
+                        rentIncreaseRate: inputs.rentIncreaseRate,
+                        capitalizationRate: inputs.capitalizationRate,
+                        discountRate: inputs.discountRate,
+                        
+                        // معلومات الأرض والبناء
+                        landArea: inputs.landArea,
+                        buildingCoefficient: inputs.buildingCoefficient,
+                        buildingRatio: inputs.buildingRatio,
+                        basementArea: inputs.basementArea,
+                        totalBuildingArea: currentResults.totalBuildingArea,
+                        siteWorkArea: currentResults.siteWorkArea,
+                        
+                        // معلومات التكاليف
+                        buildingCost: inputs.buildingCost,
+                        siteworkCost: inputs.siteworkCost,
+                        basementCost: inputs.basementCost,
+                        designCost: inputs.designCost,
+                        indirectCost: inputs.indirectCost,
+                        priceRiskCost: inputs.priceRiskCost,
+                        totalBuildingCost: currentResults.totalBuildingCost,
+                        totalSiteWorkCost: currentResults.totalSiteWorkCost,
+                        totalBasementCost: currentResults.totalBasementCost,
+                        constructionCost: currentResults.constructionCost,
+                        totalDesignCost: currentResults.totalDesignCost,
+                        totalIndirectCost: currentResults.totalIndirectCost,
+                        totalPriceRiskCost: currentResults.totalPriceRiskCost,
+                        totalConstructionCost: currentResults.totalConstructionCost,
+                        
+                        // معلومات الدخل
+                        totalIncome: inputs.totalIncome,
+                        netIncomeRatio: inputs.netIncomeRatio,
+                        incomeStartYear: inputs.incomeStartYear,
+                        incomeRampUpRate: inputs.incomeRampUpRate,
+                        averageAnnualNetIncome: currentResults.averageAnnualNetIncome,
+                        
+                        // النتائج الرئيسية
+                        annualRent: currentResults.proposedBidValue,
+                        totalContractValue: currentResults.totalContractValue,
+                        landAllocation: currentResults.landAllocation,
+                        rentToLandAllocationRatio: currentResults.rentToLandAllocationRatio * 100,
+                        npv: currentResults.npv,
+                        irr: currentResults.irr * 100,
+                        totalIncomeOverContract: currentResults.totalIncomeOverContract,
+                        totalNetIncomeOverContract: currentResults.totalNetIncomeOverContract,
+                        
+                        // الإيجارات السنوية
+                        annualRents: currentResults.annualRents,
+                        annualIncomes: currentResults.annualIncomes,
+                        annualNetIncomes: currentResults.annualNetIncomes,
+                        
+                        // اللغة الحالية
+                        language: 'ar'
+                    };
+                    
+                    // إرسال البيانات إلى الخادم لإنشاء PDF
+                    fetch('https://8085-impmpol7o10evb2cbenqt-58b58199.manusvm.computer/generate-pdf', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(exportData)
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('فشل في إنشاء ملف PDF');
+                        }
+                        return response.blob();
+                    })
+                    .then(blob => {
+                        // تنزيل الملف
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'تقرير_تحليل_أجرة_العقار.pdf';
+                        document.body.appendChild(a);
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                        a.remove();
+                    })
+                    .catch(error => {
+                        console.error(error);
+                        showNotification('خطأ', 'حدث خطأ أثناء إنشاء ملف PDF. يرجى المحاولة مرة أخرى.');
+                    });
+                } catch (error) {
+                    console.error(error);
+                    showNotification('خطأ', 'حدث خطأ أثناء إنشاء ملف PDF. يرجى المحاولة مرة أخرى.');
+                }
+            });
+            
+            // زر تبديل اللغة
+            document.getElementById('toggleLanguage').addEventListener('click', function() {
+                const currentLang = document.documentElement.lang;
+                const newLang = currentLang === 'ar' ? 'en' : 'ar';
+                switchLanguage(newLang);
+            });
+        });
+    </script>
+</body>
+</html>
